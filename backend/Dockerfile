@@ -5,7 +5,7 @@ WORKDIR /app
 
 # Install system dependencies required for native module compilation,
 # plus curl and bash (needed to run the Bun installation script)
-RUN apk add --no-cache python3 make g++ curl bash
+RUN apk add --no-cache python3 py3-setuptools make g++ curl bash
 
 # Install Bun globally and relocate it to a shared, persistent location
 RUN curl -fsSL https://bun.sh/install | bash \
