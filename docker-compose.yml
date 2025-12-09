@@ -48,9 +48,9 @@ services:
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-}
       - AWS_REGION=${AWS_REGION:-}
 
-      # Ollama Provider
-      - OLLAMA_URL=${OLLAMA_URL:-http://localhost:11434}
-      - OM_OLLAMA_URL=${OM_OLLAMA_URL:-http://localhost:11434}
+      # Ollama Provider (use http://ollama:11434 when running with docker-compose)
+      - OLLAMA_URL=${OLLAMA_URL:-http://ollama:11434}
+      - OM_OLLAMA_URL=${OM_OLLAMA_URL:-http://ollama:11434}
 
       # Local Model
       - LOCAL_MODEL_PATH=${LOCAL_MODEL_PATH:-}
@@ -126,6 +126,44 @@ services:
       retries: 3
       start_period: 30s
 
+  # Ollama for local embeddings
+  # Set OM_EMBEDDINGS=ollama and OM_OLLAMA_URL=http://ollama:11434 in your .env
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - '11434:11434'
+    volumes:
+      - ollama_data:/root/.ollama
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'ollama', 'list']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 2G
+
+  # Init container to pull the embedding model on first start
+  ollama-init:
+    image: ollama/ollama:latest
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        echo "Pulling nomic-embed-text model to ollama server..."
+        ollama pull nomic-embed-text
+        echo "Model pulled successfully"
+        ollama list
+    restart: "no"
+
   # Optional: Valkey for high-performance vector storage
   # Uncomment to use Valkey instead of SQLite/PostgreSQL for vectors
   # Don't forget to set OM_VECTOR_BACKEND=valkey in your .env
@@ -163,6 +201,8 @@ services:
 
 volumes:
   openmemory_data:
+    driver: local
+  ollama_data:
     driver: local
   # Uncomment if using Valkey
   # valkey_data:
