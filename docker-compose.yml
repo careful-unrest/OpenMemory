@@ -129,41 +129,41 @@ services:
 
   # Ollama for local embeddings
   # Set OM_EMBEDDINGS=ollama and OM_OLLAMA_URL=http://ollama:11434 in your .env
-  ollama:
-    image: ollama/ollama:latest
-    ports:
-      - '11434:11434'
-    volumes:
-      - ollama_data:/root/.ollama
-    restart: unless-stopped
-    healthcheck:
-      test: ['CMD', 'ollama', 'list']
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
-    deploy:
-      resources:
-        limits:
-          cpus: '1'
-          memory: 2G
-
-  # Init container to pull the embedding model on first start
-  ollama-init:
-    image: ollama/ollama:latest
-    depends_on:
-      ollama:
-        condition: service_healthy
-    environment:
-      - OLLAMA_HOST=http://ollama:11434
-    entrypoint: ["/bin/sh", "-c"]
-    command:
-      - |
-        echo "Pulling nomic-embed-text model to ollama server..."
-        ollama pull nomic-embed-text
-        echo "Model pulled successfully"
-        ollama list
-    restart: "no"
+#  ollama:
+#    image: ollama/ollama:latest
+#    ports:
+#      - '11434:11434'
+#    volumes:
+#      - ollama_data:/root/.ollama
+#    restart: unless-stopped
+#    healthcheck:
+#      test: ['CMD', 'ollama', 'list']
+#      interval: 30s
+#      timeout: 10s
+#      retries: 3
+#      start_period: 60s
+#    deploy:
+#      resources:
+#        limits:
+#          cpus: '1'
+#          memory: 2G
+#
+#  # Init container to pull the embedding model on first start
+#  ollama-init:
+#    image: ollama/ollama:latest
+#    depends_on:
+#      ollama:
+#        condition: service_healthy
+#    environment:
+#      - OLLAMA_HOST=http://ollama:11434
+#    entrypoint: ["/bin/sh", "-c"]
+#    command:
+#      - |
+#        echo "Pulling nomic-embed-text model to ollama server..."
+#        ollama pull nomic-embed-text
+#        echo "Model pulled successfully"
+#        ollama list
+#    restart: "no"
 
   # Optional: Valkey for high-performance vector storage
   # Uncomment to use Valkey instead of SQLite/PostgreSQL for vectors
