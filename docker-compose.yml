@@ -117,7 +117,8 @@ services:
       - OM_KEYWORD_BOOST=${OM_KEYWORD_BOOST:-2.5}
       - OM_KEYWORD_MIN_LENGTH=${OM_KEYWORD_MIN_LENGTH:-3}
     volumes:
-      - openmemory_data:/data
+      - openmemory_data:/app/data
+      - ./models.yml:/app/models.yml:ro
     restart: unless-stopped
     healthcheck:
       test: ['CMD', 'node', '-e', "require('http').get('http://localhost:8080/health', (res) => process.exit(res.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"]
