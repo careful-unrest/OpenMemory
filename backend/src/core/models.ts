@@ -5,23 +5,37 @@ interface model_cfg {
 }
 let cfg: model_cfg | null = null;
 
+const find_models_file = (): string | null => {
+    const paths = [
+        join(__dirname, "../../../models.yml"),
+        "/app/models.yml",
+        join(process.cwd(), "models.yml"),
+    ];
+    for (const p of paths) {
+        if (existsSync(p)) return p;
+    }
+    return null;
+};
+
 export const load_models = (): model_cfg => {
     if (cfg) return cfg;
-    const p = join(__dirname, "../../../models.yml");
-    if (!existsSync(p)) {
+    const p = find_models_file();
+    if (!p) {
         console.warn("[MODELS] models.yml not found, using defaults");
-        return get_defaults();
+        cfg = get_defaults();
+        return cfg;
     }
     try {
         const yml = readFileSync(p, "utf-8");
         cfg = parse_yaml(yml);
         console.log(
-            `[MODELS] Loaded models.yml (${Object.keys(cfg).length} sectors)`,
+            `[MODELS] Loaded models.yml from ${p} (${Object.keys(cfg).length} sectors)`,
         );
         return cfg;
     } catch (e) {
         console.error("[MODELS] Failed to parse models.yml:", e);
-        return get_defaults();
+        cfg = get_defaults();
+        return cfg;
     }
 };
 
@@ -51,35 +65,35 @@ const get_defaults = (): model_cfg => ({
     episodic: {
         ollama: "nomic-embed-text",
         openai: "text-embedding-3-small",
-        gemini: "models/embedding-001",
+        gemini: "gemini-embedding-001",
         aws: "amazon.titan-embed-text-v2:0",
         local: "all-MiniLM-L6-v2",
     },
     semantic: {
         ollama: "nomic-embed-text",
         openai: "text-embedding-3-small",
-        gemini: "models/embedding-001",
+        gemini: "gemini-embedding-001",
         aws: "amazon.titan-embed-text-v2:0",
         local: "all-MiniLM-L6-v2",
     },
     procedural: {
         ollama: "nomic-embed-text",
         openai: "text-embedding-3-small",
-        gemini: "models/embedding-001",
+        gemini: "gemini-embedding-001",
         aws: "amazon.titan-embed-text-v2:0",
         local: "all-MiniLM-L6-v2",
     },
     emotional: {
         ollama: "nomic-embed-text",
         openai: "text-embedding-3-small",
-        gemini: "models/embedding-001",
+        gemini: "gemini-embedding-001",
         aws: "amazon.titan-embed-text-v2:0",
         local: "all-MiniLM-L6-v2",
     },
     reflective: {
         ollama: "nomic-embed-text",
         openai: "text-embedding-3-large",
-        gemini: "models/embedding-001",
+        gemini: "gemini-embedding-001",
         aws: "amazon.titan-embed-text-v2:0",
         local: "all-mpnet-base-v2",
     },
