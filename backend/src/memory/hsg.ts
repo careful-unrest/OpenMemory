@@ -44,6 +44,7 @@ export interface hsg_q_result {
     path: string[];
     salience: number;
     last_seen_at: number;
+    metadata?: any;
 }
 export const sector_configs: Record<string, sector_cfg> = {
     episodic: {
@@ -891,6 +892,16 @@ export async function hsg_query(
             );
             const msec = await vector_store.getVectorsById(mid);
             const sl = msec.map((v) => v.sector);
+
+            // Parse metadata from database (stored as JSON string)
+            let parsedMeta;
+            try {
+                parsedMeta = m.meta ? JSON.parse(m.meta) : undefined;
+            } catch (e) {
+                console.error(`[HSG] Failed to parse metadata for memory ${mid}:`, e);
+                parsedMeta = undefined;
+            }
+
             res.push({
                 id: mid,
                 content: m.content,
@@ -900,6 +911,7 @@ export async function hsg_query(
                 path: em?.path || [mid],
                 salience: sal,
                 last_seen_at: m.last_seen_at,
+                metadata: parsedMeta,
             });
         }
         res.sort((a, b) => b.score - a.score);
